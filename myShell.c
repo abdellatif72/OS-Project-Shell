@@ -8,7 +8,7 @@
 Command *pwd_command();
 
 int main() {
-  // disable buffering for stdout -> always print immediately
+  // disable buffering for standard output -> always print immediately
   setvbuf(stdout, NULL, _IONBF, 0);
 
   // REPL
