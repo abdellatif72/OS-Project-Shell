@@ -1,5 +1,5 @@
 // to prevent multiple inclusion of this header file.
-#pragma once 
+#pragma once
 
 // a simulation of an abstract class that will be used by all commands
 typedef struct Command

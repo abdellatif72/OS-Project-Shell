@@ -1,4 +1,5 @@
 myShell:
-	gcc myShell.c -o myShell
+	gcc *.h *.c -o myShell
+
 clean:
 	rm -f myShell

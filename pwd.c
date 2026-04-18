@@ -1,7 +1,7 @@
 #include "Command.h"
 #include <stdio.h>  // puts(), perror()
 #include <string.h> // strdup()
-#include <stdlib.h> // malloc()
+#include <stdlib.h> // malloc(), free()
 #include <unistd.h> // getcwd()
 
 static void run(Command *self)
@@ -19,7 +19,7 @@ static void run(Command *self)
     }
     else
     {
-        perror("Permission Denied");
+        perror("getcwd");
     }
 }
 
@@ -29,13 +29,21 @@ static void help(Command *self)
     puts("Print the name of the current working directory.");
 }
 
-static void destroy(Command* self){
-    if(self==NULL)
+/*
+    destroy releases the resources owned by this command instance.
+    free the fields before freeing the struct itself, because after
+    free(self) the command pointer is no longer valid.
+*/
+
+static void destroy(Command *self)
+{
+    if (self == NULL)
         return;
 
     free(self->name);
 
-    if(self->args != NULL){
+    if (self->args != NULL)
+    {
         free(self->args);
     }
 
@@ -51,6 +59,7 @@ Command *pwd_command()
     cmd->args = NULL;
     cmd->run = run;
     cmd->help = help;
+    cmd->destroy = destroy;
 
     return cmd;
 }
