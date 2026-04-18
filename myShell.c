@@ -47,8 +47,8 @@ int main() {
         char* name = strtok(commands[i], " \t");
         if(name==NULL) continue;
 
-        if(strcmp(name, "pwd")==0){
-            Command* cmd = pwd_command();
+        Command* cmd = pwd_command();
+        if(strcmp(name, cmd->name)==0){
             cmd->run(cmd); // execute the pwd command
             cmd->destroy(cmd); // free the memory
         }

@@ -68,6 +68,30 @@ shell$ pwd
 shell$
 ```
 
+### Testing (Valgrind)
+```text
+abdellatif@fedora:~/CS/FCDS_Operating_Systems_Final_Project/Shell$ valgrind --leak-check=full --show-leak-kinds=all ./myShell
+==373094== Memcheck, a memory error detector
+==373094== Copyright (C) 2002-2024, and GNU GPL'd, by Julian Seward et al.
+==373094== Using Valgrind-3.26.0 and LibVEX; rerun with -h for copyright info
+==373094== Command: ./myShell
+==373094==
+shell$ pwd
+/home/abdellatif/CS/FCDS_Operating_Systems_Final_Project/Shell
+shell$ pwd
+/home/abdellatif/CS/FCDS_Operating_Systems_Final_Project/Shell
+shell$
+==373094==
+==373094== HEAP SUMMARY:
+==373094==     in use at exit: 0 bytes in 0 blocks
+==373094==   total heap usage: 5 allocs, 5 frees, 1,112 bytes allocated
+==373094==
+==373094== All heap blocks were freed -- no leaks are possible
+==373094==
+==373094== For lists of detected and suppressed errors, rerun with: -s
+==373094== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
+```
+
 ---
 
 ## Project Progress
