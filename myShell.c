@@ -6,20 +6,23 @@
 #define MAX_LINE 1024
 
 Command *pwd_command();
+Command *exit_command();
 
 int main() {
   // disable buffering for standard output -> always print immediately
   setvbuf(stdout, NULL, _IONBF, 0);
 
   // REPL
-  while (1) {
+  int repl = 1;
+  while (repl) {
     printf("shell$ ");
 
     // read the whole input of the user
     char user_input[MAX_LINE];
     if(fgets(user_input, sizeof(user_input), stdin) == NULL){
-        printf("\n");
-        break;
+        printf("\n");    // just for clean prompt
+        clearerr(stdin); // reset EOF flag
+        continue;
     }
 
     // remove the trailing newline
@@ -47,7 +50,19 @@ int main() {
         char* name = strtok(commands[i], " \t");
         if(name==NULL) continue;
 
-        Command* cmd = pwd_command();
+        Command* cmd;
+        if(strcmp(name, "pwd")==0){
+
+          cmd = pwd_command();
+
+        }else if(strcmp(name, "exit")==0){
+          cmd = exit_command();
+          repl = 0;
+          break;
+        }else{
+          continue;
+        }
+
         if(strcmp(name, cmd->name)==0){
             cmd->run(cmd); // execute the pwd command
             cmd->destroy(cmd); // free the memory
