@@ -4,6 +4,8 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include <sys/wait.h>
+#include <sys/types.h> 
+#include <signal.h>    // signal handling (SIGCHLD)
 
 #define MAX_LINE 1024
 
@@ -13,6 +15,11 @@ Command *cd_command(char **args);
 int main()
 {
     setvbuf(stdout, NULL, _IONBF, 0);
+
+    signal(SIGCHLD, SIG_IGN);      /*prevents zombie processes for background execution
+                                     When a child finishes, OS cleans it automatically */
+
+    
 
     while (1)
     {
@@ -36,6 +43,26 @@ int main()
         if (user_input[0] == '\0')
             continue;
 
+         // detect if command should run in background using '&'
+        int background = 0;
+        int len = strlen(user_input);
+
+        if (len > 0 && user_input[len - 1] == '&')
+        {
+            background = 1;              
+            user_input[len - 1] = '\0';  // remove '&' so execvp doesn't see it
+
+            // remove trailing spaces after '&'
+
+            while (len > 1 && user_input[len - 2] == ' ')
+            {
+                user_input[len - 2] = '\0';
+                len--;
+            }
+        }
+
+
+
         /* split by pipe */
         char *commands[50];
         int argc = 0;
@@ -56,11 +83,14 @@ int main()
             char *tokens[50];
             int token_count = 0;
 
-            char *t = strtok(commands[i], " \t");
+            char segment_copy[MAX_LINE];
+            strncpy(segment_copy, commands[i], MAX_LINE - 1);
+            segment_copy[MAX_LINE - 1] = '\0';
 
+            char *t = strtok(segment_copy, " \t");
             while (t != NULL && token_count < 49)
             {
-                tokens[token_count++] = t;
+                tokens[token_count++] = strdup(t);   // strdup keeps a safe copy
                 t = strtok(NULL, " \t");
             }
 
@@ -95,7 +125,12 @@ int main()
             {
                 pid_t pid = fork();
 
-                if (pid == 0)
+                      if (pid < 0)
+                {
+                    perror("fork failed");
+                }
+
+                else if (pid == 0)
                 {
                     execvp(tokens[0], tokens);
                     perror("exec failed");
@@ -103,9 +138,22 @@ int main()
                 }
                 else
                 {
-                    wait(NULL);
+                    if (background)
+                    {
+                        /* run in background → Don't Wait
+                           print PID so user knows process ID */
+
+                        printf("[Background PID %d]\n", pid);
+                    }
+                    else
+                    {
+                        // wait for child to finish ( foreground )
+                        waitpid(pid, NULL, 0);
+                    }
                 }
             }
+            for (int j = 0; j < token_count; j++)
+                free(tokens[j]); // free strdup'd token copies
         }
     }
 

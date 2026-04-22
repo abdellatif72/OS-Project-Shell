@@ -92,15 +92,96 @@ shell$
 ==373094== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
 ```
 
+
+---
+
+## Background Execution
+
+### Purpose
+Run a command in the background so the shell remains usable while the command executes concurrently.
+
+### Syntax
+`<command> [arguments] &`
+
+### Arguments
+The `&` symbol must be the last character of the input line. It is not passed to the command itself.
+
+### Behavior
+- If `&` is present, the shell prints the child process ID and returns to the prompt immediately.
+- If `&` is absent, the shell waits for the command to finish before showing the prompt again (foreground execution).
+- Finished background processes are cleaned up automatically — no zombie processes are left behind.
+
+### Implementation details
+All changes are in `myShell.c`.
+
+**`signal(SIGCHLD, SIG_IGN)`**
+
+Called once before the main loop. When a background child finishes, the OS normally keeps its exit record until the parent calls `wait()`. Setting `SIGCHLD` to `SIG_IGN` tells the kernel to discard those records automatically, preventing zombie processes.
+
+**`&` detection**
+
+After reading input and stripping the newline, the shell checks whether the last character is `&`. If so, `background` is set to `1`, the `&` is removed from the string, and any trailing spaces are trimmed so `execvp()` receives a clean command.
+
+**Safe tokenisation with `strdup()`**
+
+The original code called `strtok()` twice on the same string — once to split by `|` and again to split by spaces. Because `strtok()` uses a single internal pointer, the second call reset it and arguments were lost. The fix copies each pipe segment into a local buffer before tokenising it. Each token is then duplicated with `strdup()` so it owns its own memory.
+
+**Foreground vs background wait**
+
+In the parent branch after `fork()`:
+- `background == 0` → `waitpid()` blocks until the child exits.
+- `background == 1` → `waitpid()` is skipped; the PID is printed and the loop continues.
+
+**Token cleanup**
+
+Each token was heap-allocated with `strdup()`, so `free()` is called on every token at the end of each loop iteration, preventing memory leaks even when `fork()` fails.
+
+### Example
+```text
+shell$ sleep 5 &
+[Background PID 1042]
+shell$
+shell$ sleep 3
+shell$
+```
+
+### Testing (Valgrind)
+```text
+$ valgrind --leak-check=full --show-leak-kinds=all ./myShell
+==412301== Memcheck, a memory error detector
+==412301== Command: ./myShell
+==412301==
+shell$ sleep 3 &
+[Background PID 412310]
+shell$ echo hello
+hello
+shell$
+==412301== HEAP SUMMARY:
+==412301==     in use at exit: 0 bytes in 0 blocks
+==412301==   total heap usage: 12 allocs, 12 frees, 1,248 bytes allocated
+==412301==
+==412301== All heap blocks were freed -- no leaks are possible
+==412301==
+==412301== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
+```
+
+### Files changed
+
+| File | Change |
+|---|---|
+| `myShell.c` | Added `<signal.h>`, zombie prevention, `&` detection, safe tokenisation, foreground/background wait logic, token `free()` |
+
+No other files were modified.
+
 ---
 
 ## Project Progress
 
-Based on all roadmap checkboxes, including subtasks, the project is at 10% completion (3/31).
+Based on all roadmap checkboxes, including subtasks, the project is at 25% completion (8/31).
 
 Each checked box counts toward the total, not only the main roadmap items.
 
-<progress value="3" max="31"></progress>
+<progress value="8" max="31"></progress>
 
 ---
 
@@ -120,10 +201,10 @@ Each checked box counts toward the total, not only the main roadmap items.
   - [x] `pwd` @abdellatif72
   - [ ] `history`
 
-- [ ] Process management
-  - [ ] Support foreground execution.
-  - [ ] Support background execution using `&`.
-  - [ ] Print the process ID for background processes.
+- [x] Process management
+  - [x] Support foreground execution. @TLMostafa1650
+  - [x] Support background execution using `&`. @TLMostafa1650
+  - [x] Print the process ID for background processes. @TLMostafa1650
 
 - [ ] Input/output redirection
   - [ ] Support output redirection with `>`.
