@@ -11,6 +11,7 @@
 
 Command *pwd_command();
 Command *cd_command(char **args);
+void execute_pipeline(char **pipe_segments, int n_cmds); 
 
 int main()
 {
@@ -77,6 +78,12 @@ int main()
 
         commands[argc] = NULL;
 
+        if (argc > 1) {
+            execute_pipeline(commands, argc);
+            continue;  // done handling this user_input line
+        }
+
+        /* existing single-command logic here (your current for-loop body, simplified to one command) */
         for (int i = 0; i < argc; i++)
         {
             /* split by spaces */
