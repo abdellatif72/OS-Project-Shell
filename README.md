@@ -177,11 +177,11 @@ No other files were modified.
 
 ## Project Progress
 
-Based on all roadmap checkboxes, including subtasks, the project is at 25% completion (8/31).
+Based on all roadmap checkboxes, including subtasks, the project is at 50% completion (12/24).
 
 Each checked box counts toward the total, not only the main roadmap items.
 
-<progress value="8" max="31"></progress>
+<progress value="12" max="24"></progress>
 
 ---
 
@@ -191,13 +191,13 @@ Each checked box counts toward the total, not only the main roadmap items.
   - [x] Display a prompt such as `myShell$`. @abdellatif72
   - [x] Accept user input. @abdellatif72
   - [x] Parse commands and arguments. @abdellatif72
-  - [ ] Execute commands using `fork()`.
-  - [ ] Execute commands using the `exec()` family.
-  - [ ] Run external commands such as `ls`, `cat`, `wc`, `touch`, `mv`, `cp`, and `rm` through the normal execution path.
+  - [x] Execute commands using `fork()`. @abdoheshamelsaid-bit
+  - [x] Execute commands using the `exec()` family. @abdoheshamelsaid-bit
+  - [x] Run external commands such as `ls`, `cat`, `wc`, `touch`, `mv`, `cp`, and `rm` through the normal execution path. @abdoheshamelsaid-bit
 
 - [ ] Built-in commands
-  - [ ] `cd <directory>`
-  - [ ] `exit`
+  - [x] `cd <directory>` @MohamedAlaa2005
+  - [x] `exit` @ABDOMAGDY2005
   - [x] `pwd` @abdellatif72
   - [ ] `history`
 
