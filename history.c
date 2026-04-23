@@ -77,72 +77,68 @@ void get_input(char *buffer, int max_len) {
             buffer[pos] = '\0';
             putchar('\n');
             break;
-        } else if (c ==  127 || c == 8) {
-            if (pos > 0) {
+        } else if (c == 127 || c == 8) { // Backspace
+            if (cursor > 0) {
+                for (int i = cursor - 1; i < pos - 1; i++) {
+                    buffer[i] = buffer[i + 1];
+                }
                 pos--;
-                printf("\b \b");
+                cursor--;
+
+                printf("\b\033[K"); // Move back and clear line after
+                for (int i = cursor; i < pos; i++) {
+                    putchar(buffer[i]);
+                }
+                // Return cursor
+                for (int i = 0; i < (pos - cursor); i++) {
+                    printf("\033[D");
+                }
             }
-        } else if (c == 3) {
-            tcsetattr(STDIN_FILENO, TCSANOW, &oldt);
-            printf("^C\n");
-            buffer[0] = '\0';
-            break;
-        } else if (c == 4) {
+        } else if (c == 3) { // Ctrl+C
+            printf("\n");
+            printf("\033[1;34mshell$ \033[0m");
+            pos = 0;
+            cursor = 0;
+            nav_idx = hist_count;
+            memset(buffer, 0, max_len);
+        } else if (c == 4) { // Ctrl+D
             if (pos == 0) {
                 tcsetattr(STDIN_FILENO, TCSANOW, &oldt);
                 printf("exit\n");
                 exit(0);
             }
-        } else if (c == 27) {
+        } else if (c == 27) { // Escape sequences
             char seq[2];
-            if (read(STDIN_FILENO, &seq[0], 1) == 0) {
-                break;
-            }
-            if (read(STDIN_FILENO, &seq[1], 1) == 0) {
-                break;
-            }
+            if (read(STDIN_FILENO, &seq[0], 1) <= 0) continue;
+            if (read(STDIN_FILENO, &seq[1], 1) <= 0) continue;
 
-            if (seq[0] =='[') {
-                if (seq[1] == 'A') {
-                    if (nav_idx > 0) {
-                        nav_idx--;
-                        while (cursor > 0) {
-                            printf("\033[D");
-                            cursor--;
-                        }
-                        printf("\033[K");
+            if (seq[0] == '[') {
+                if (seq[1] == 'A' || seq[1] == 'B') {
+                    // History Up/Down
+                    while(cursor > 0) { printf("\b"); cursor--; }
+                    printf("\033[K");
+                    
+                    if (seq[1] == 'A' && nav_idx > 0) nav_idx--;
+                    else if (seq[1] == 'B' && nav_idx < hist_count) nav_idx++;
+
+                    if (nav_idx < hist_count) {
                         strncpy(buffer, history_list[nav_idx], max_len - 1);
-                        pos = strlen(buffer);
-                        cursor = pos;
-                        printf("%s", buffer);
+                        buffer[max_len -1] = '\0';
+                    } else {
+                        buffer[0] = '\0';
                     }
-                } else if (seq[1] == 'B') {
-                    if (nav_idx < hist_count - 1) {
-                        nav_idx++;
-                        while(cursor > 0) { 
-                            printf("\033[D");
-                            cursor--; 
-                        }
-                        printf("\033[K");
-                        if (nav_idx < hist_count) {
-                            strncpy(buffer, history_list[nav_idx], max_len - 1);
-                        } else {
-                            buffer[0] = '\0';
-                        }
-                        pos = strlen(buffer);
-                        cursor = pos;
-                        printf("%s", buffer);
-                    }
-                } else if (seq[1] == 'C') {
-                    if (cursor < pos) {
-                        printf("\033[C");
-                        cursor++;
-                    }
-                } else if (seq[1] == 'D') {
-                    if (cursor > 0) {
-                        printf("\033[D");
-                        cursor--;
-                    }
+
+                    pos = strlen(buffer);
+                    cursor = pos;
+                    printf("%s", buffer);
+                } 
+                else if (seq[1] == 'C' && cursor < pos) {
+                    printf("\033[C");
+                    cursor++;
+                } 
+                else if (seq[1] == 'D' && cursor > 0) {
+                    printf("\033[D");
+                    cursor--;
                 }   
             }
         } else {
@@ -153,11 +149,13 @@ void get_input(char *buffer, int max_len) {
                 buffer[cursor] = c;
                 pos++;
 
+                // Print from cursor onwards
                 for (int i = cursor; i < pos; i++) {
                     putchar(buffer[i]);
                 }
                 cursor++;
 
+                // Move cursor back to position
                 for (int i = 0; i < (pos - cursor); i++) {
                     printf("\033[D"); 
                 }
