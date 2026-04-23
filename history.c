@@ -185,3 +185,13 @@ void get_input(char *buffer, int max_len)
     }
     tcsetattr(STDIN_FILENO, TCSANOW, &oldt);
 }
+
+
+void free_history(){
+    for(int i = 0; i < hist_count; i++){
+        free(history_list[i]);
+        history_list[i] = NULL;
+    }
+
+    hist_count=0;
+}

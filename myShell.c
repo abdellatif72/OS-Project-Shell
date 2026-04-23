@@ -15,6 +15,7 @@ Command *pwd_command();
 Command *cd_command(char **args);
 Command *history_command();
 Command *exit_command();
+void free_history();
 
 void add_to_history(const char *cmd);
 void get_input(char *buffer, int max_len);
@@ -32,10 +33,6 @@ int main()
 
     while (1)
     {
-        while (waitpid(-1, NULL, WNOHANG) > 0)
-        {
-        }
-
         printf("\033[1;34mshell$ \033[0m");
 
         char user_input[MAX_LINE];
@@ -133,6 +130,15 @@ int main()
                 Command *cmd = exit_command();
                 cmd->run(cmd);
                 cmd->destroy(cmd);
+
+                for(int j = 0; j < token_count; j++){
+                    free(tokens[j]);
+                }
+
+                free(name);
+
+                free_history();
+
                 return 0;
             }
 
@@ -144,12 +150,14 @@ int main()
                 if (pid < 0)
                 {
                     perror("fork failed");
+                    free_history();
                 }
                 else if (pid == 0)
                 {
                     signal(SIGINT, SIG_DFL);
                     execvp(tokens[0], tokens);
                     perror("exec failed");
+                    free_history();
                     exit(1);
                 }
                 else
@@ -180,7 +188,9 @@ int main()
                     }
                 }
                 for (int j = 0; j < token_count; j++)
-                free(tokens[j]); // free strdup'd token copies
+                    free(tokens[j]); // free strdup'd token copies
+
+                free_history();
             }
         }
 
