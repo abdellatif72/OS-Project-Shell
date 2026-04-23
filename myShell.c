@@ -1,4 +1,5 @@
 #include "Command.h"
+#include "redirection.h"
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
@@ -7,7 +8,6 @@
 #include <sys/types.h>
 #include <signal.h> // signal handling (SIGCHLD)
 #include <errno.h>
-#include <fcntl.h>
 
 #define MAX_LINE 1024
 #define MAX_BG 1000
@@ -21,79 +21,6 @@ void free_history();
 void add_to_history(const char *cmd);
 int get_input(char *buffer, int max_len);
 void execute_pipeline(char **pipe_segments, int n_cmds);
-
-
-void handle_redirection(char **tokens)
-{
-    for (int i = 0; tokens[i] != NULL; i++)
-    {
-        // Output redirection >
-        if (strcmp(tokens[i], ">") == 0)
-        {
-            if (tokens[i + 1] == NULL)
-            {
-                fprintf(stderr, "Syntax error: no output file\n");
-                exit(1);
-            }
-
-            int fd = open(tokens[i + 1], O_WRONLY | O_CREAT | O_TRUNC, 0644);
-            if (fd < 0)
-            {
-                perror("open failed");
-                exit(1);
-            }
-
-            dup2(fd, STDOUT_FILENO);
-            close(fd);
-
-            tokens[i] = NULL; // cut command here
-        }
-
-        // Input redirection <
-        else if (strcmp(tokens[i], "<") == 0)
-        {
-            if (tokens[i + 1] == NULL)
-            {
-                fprintf(stderr, "Syntax error: no input file\n");
-                exit(1);
-            }
-
-            int fd = open(tokens[i + 1], O_RDONLY);
-            if (fd < 0)
-            {
-                perror("open failed");
-                exit(1);
-            }
-
-            dup2(fd, STDIN_FILENO);
-            close(fd);
-
-            tokens[i] = NULL;
-        }
-
-        else if (strcmp(tokens[i], ">>") == 0)
-        {
-            if (tokens[i + 1] == NULL)
-            {
-                fprintf(stderr, "Syntax error: no output file\n");
-                exit(1);
-            }
-
-            int fd = open(tokens[i + 1], O_WRONLY | O_CREAT | O_APPEND, 0644);
-            if (fd < 0)
-            {
-                perror("open failed");
-                exit(1);
-            }
-
-            dup2(fd, STDOUT_FILENO);
-            close(fd);
-
-            tokens[i] = NULL;
-        }
-    }
-}
-
 
 /* ---------------- BACKGROUND PROCESS STORAGE ---------------- */
 pid_t bg_pids[MAX_BG];
