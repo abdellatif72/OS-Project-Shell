@@ -9,12 +9,20 @@
 #include <errno.h>
 
 #define MAX_LINE 1024
+#define MAX_BG 1000
 
 Command *pwd_command();
 Command *cd_command(char **args);
 Command *history_command();
+Command *exit_command();
+
 void add_to_history(const char *cmd);
 void get_input(char *buffer, int max_len);
+void execute_pipeline(char **pipe_segments, int n_cmds);
+
+/* ---------------- BACKGROUND PROCESS STORAGE ---------------- */
+pid_t bg_pids[MAX_BG];
+int bg_count = 0;
 
 int main()
 {
@@ -38,7 +46,7 @@ int main()
 
         add_to_history(user_input);
 
-         // detect if command should run in background using '&'
+        /* ---------------- BACKGROUND DETECTION ---------------- */
         int background = 0;
         int len = strlen(user_input);
 
@@ -56,9 +64,7 @@ int main()
             }
         }
 
-
-
-        /* split by pipe */
+        /* ---------------- PIPE HANDLING ---------------- */
         char *commands[50];
         int argc = 0;
 
@@ -72,6 +78,12 @@ int main()
 
         commands[argc] = NULL;
 
+        if (argc > 1) {
+            execute_pipeline(commands, argc);
+            continue;  // done handling this user_input line
+        }
+
+        /* ---------------- SINGLE COMMANDS ---------------- */
         for (int i = 0; i < argc; i++)
         {
             /* split by spaces */
@@ -110,15 +122,18 @@ int main()
                 cmd->run(cmd);
                 cmd->destroy(cmd);
             }
-            else if (strcmp(name, "exit") == 0)
-            {
-                return 0;
-            }
             else if (strcmp(name, "history") == 0)
             {
                 Command *cmd = history_command();
                 cmd->run(cmd);
                 cmd->destroy(cmd);
+            }
+            else if (strcmp(name, "exit") == 0)
+            {
+                Command *cmd = exit_command();
+                cmd->run(cmd);
+                cmd->destroy(cmd);
+                return 0;
             }
 
             /* ---------------- EXTERNAL COMMANDS ---------------- */
@@ -126,11 +141,10 @@ int main()
             {
                 pid_t pid = fork();
 
-                      if (pid < 0)
+                if (pid < 0)
                 {
                     perror("fork failed");
                 }
-
                 else if (pid == 0)
                 {
                     signal(SIGINT, SIG_DFL);
@@ -142,8 +156,8 @@ int main()
                 {
                     if (background)
                     {
-                        /* run in background → Don't Wait
-                           print PID so user knows process ID */
+                        if (bg_count < MAX_BG)
+                            bg_pids[bg_count++] = pid;
 
                         printf("[Background PID %d]\n", pid);
                     }
@@ -165,9 +179,10 @@ int main()
                     }
                     }
                 }
-                for (int j = 0; j < token_count; j++)
-                free(tokens[j]); // free strdup'd token copies
             }
+
+            for (int j = 0; j < token_count; j++)
+                free(tokens[j]);
         }
 
     return 0;
