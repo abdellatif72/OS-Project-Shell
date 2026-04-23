@@ -70,7 +70,7 @@ Command *history_command()
     return cmd;
 }
 
-void get_input(char *buffer, int max_len)
+int get_input(char *buffer, int max_len)
 {
     struct termios oldt, newt;
     tcgetattr(STDIN_FILENO, &oldt);
@@ -122,7 +122,7 @@ void get_input(char *buffer, int max_len)
             if (pos == 0) {
                 tcsetattr(STDIN_FILENO, TCSANOW, &oldt);
                 printf("exit\n");
-                exit(0);
+                return -1;
             }
         } else if (c == 27) { // Escape sequences
             char seq[2];
@@ -184,8 +184,8 @@ void get_input(char *buffer, int max_len)
         }
     }
     tcsetattr(STDIN_FILENO, TCSANOW, &oldt);
+    return 0;
 }
-
 
 void free_history(){
     for(int i = 0; i < hist_count; i++){

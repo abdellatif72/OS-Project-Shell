@@ -4,9 +4,10 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include <sys/wait.h>
-#include <sys/types.h> 
-#include <signal.h>    // signal handling (SIGCHLD)
+#include <sys/types.h>
+#include <signal.h> // signal handling (SIGCHLD)
 #include <errno.h>
+#include <fcntl.h>
 
 #define MAX_LINE 1024
 #define MAX_BG 1000
@@ -18,8 +19,81 @@ Command *exit_command();
 void free_history();
 
 void add_to_history(const char *cmd);
-void get_input(char *buffer, int max_len);
+int get_input(char *buffer, int max_len);
 void execute_pipeline(char **pipe_segments, int n_cmds);
+
+
+void handle_redirection(char **tokens)
+{
+    for (int i = 0; tokens[i] != NULL; i++)
+    {
+        // Output redirection >
+        if (strcmp(tokens[i], ">") == 0)
+        {
+            if (tokens[i + 1] == NULL)
+            {
+                fprintf(stderr, "Syntax error: no output file\n");
+                exit(1);
+            }
+
+            int fd = open(tokens[i + 1], O_WRONLY | O_CREAT | O_TRUNC, 0644);
+            if (fd < 0)
+            {
+                perror("open failed");
+                exit(1);
+            }
+
+            dup2(fd, STDOUT_FILENO);
+            close(fd);
+
+            tokens[i] = NULL; // cut command here
+        }
+
+        // Input redirection <
+        else if (strcmp(tokens[i], "<") == 0)
+        {
+            if (tokens[i + 1] == NULL)
+            {
+                fprintf(stderr, "Syntax error: no input file\n");
+                exit(1);
+            }
+
+            int fd = open(tokens[i + 1], O_RDONLY);
+            if (fd < 0)
+            {
+                perror("open failed");
+                exit(1);
+            }
+
+            dup2(fd, STDIN_FILENO);
+            close(fd);
+
+            tokens[i] = NULL;
+        }
+
+        else if (strcmp(tokens[i], ">>") == 0)
+        {
+            if (tokens[i + 1] == NULL)
+            {
+                fprintf(stderr, "Syntax error: no output file\n");
+                exit(1);
+            }
+
+            int fd = open(tokens[i + 1], O_WRONLY | O_CREAT | O_APPEND, 0644);
+            if (fd < 0)
+            {
+                perror("open failed");
+                exit(1);
+            }
+
+            dup2(fd, STDOUT_FILENO);
+            close(fd);
+
+            tokens[i] = NULL;
+        }
+    }
+}
+
 
 /* ---------------- BACKGROUND PROCESS STORAGE ---------------- */
 pid_t bg_pids[MAX_BG];
@@ -29,14 +103,18 @@ int main()
 {
     setvbuf(stdout, NULL, _IONBF, 0);
 
-    signal(SIGINT, SIG_IGN); 
+    signal(SIGINT, SIG_IGN);
 
     while (1)
     {
         printf("\033[1;34mshell$ \033[0m");
 
         char user_input[MAX_LINE];
-        get_input(user_input, MAX_LINE);
+        if (get_input(user_input, MAX_LINE) == -1)
+        {
+            free_history();
+            return 0;
+        }
 
         if (user_input[0] == '\0')
             continue;
@@ -49,8 +127,8 @@ int main()
 
         if (len > 0 && user_input[len - 1] == '&')
         {
-            background = 1;              
-            user_input[len - 1] = '\0';  // remove '&' so execvp doesn't see it
+            background = 1;
+            user_input[len - 1] = '\0'; // remove '&' so execvp doesn't see it
 
             // remove trailing spaces after '&'
 
@@ -75,9 +153,10 @@ int main()
 
         commands[argc] = NULL;
 
-        if (argc > 1) {
+        if (argc > 1)
+        {
             execute_pipeline(commands, argc);
-            continue;  // done handling this user_input line
+            continue; // done handling this user_input line
         }
 
         /* ---------------- SINGLE COMMANDS ---------------- */
@@ -94,7 +173,7 @@ int main()
             char *t = strtok(segment_copy, " \t");
             while (t != NULL && token_count < 49)
             {
-                tokens[token_count++] = strdup(t);   // strdup keeps a safe copy
+                tokens[token_count++] = strdup(t); // strdup keeps a safe copy
                 t = strtok(NULL, " \t");
             }
 
@@ -131,7 +210,8 @@ int main()
                 cmd->run(cmd);
                 cmd->destroy(cmd);
 
-                for(int j = 0; j < token_count; j++){
+                for (int j = 0; j < token_count; j++)
+                {
                     free(tokens[j]);
                 }
 
@@ -155,8 +235,15 @@ int main()
                 else if (pid == 0)
                 {
                     signal(SIGINT, SIG_DFL);
+                    handle_redirection(tokens);
                     execvp(tokens[0], tokens);
+                    if (errno == ENOENT)
+                    {
+                        fprintf(stderr, "myShell: command not found: %s\n", tokens[0]);
+                        exit(127);
+                    }
                     perror("exec failed");
+                    free(name);
                     free_history();
                     exit(1);
                 }
@@ -177,23 +264,21 @@ int main()
                         do
                         {
                             w = waitpid(pid, &status, 0);
-                        }
-                        while (w == -1 && errno == EINTR);
+                        } while (w == -1 && errno == EINTR);
 
                         if (w == pid && WIFSIGNALED(status) && WTERMSIG(status) == SIGINT)
                         {
                             printf("\n");
                         }
                     }
-                    }
                 }
-                for (int j = 0; j < token_count; j++)
-                    free(tokens[j]); // free strdup'd token copies
-
-                free_history();
             }
+            for (int j = 0; j < token_count; j++)
+                free(tokens[j]); // free strdup'd token copies
         }
+    }
+
+    free_history();
 
     return 0;
 }
-

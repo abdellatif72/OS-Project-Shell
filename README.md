@@ -61,35 +61,104 @@ In this project, `pwd` is implemented in `pwd.c` inside `run()`, which:
 3. prints the path on success,
 4. otherwise calls `perror("getcwd")`.
 
-### Example
+### Examples
 ```text
 shell$ pwd
 /home/abdellatif/CS/FCDS_Operating_Systems_Final_Project/Shell
 shell$
 ```
 
+```text
+abdellatif@fedora:~/CS/FCDS_Operating_Systems_Final_Project/shell_1$ ./myShell 
+shell$ ls | wc -l
+10
+shell$ exit
+```
+
 ### Testing (Valgrind)
 ```text
-abdellatif@fedora:~/CS/FCDS_Operating_Systems_Final_Project/Shell$ valgrind --leak-check=full --show-leak-kinds=all ./myShell
-==373094== Memcheck, a memory error detector
-==373094== Copyright (C) 2002-2024, and GNU GPL'd, by Julian Seward et al.
-==373094== Using Valgrind-3.26.0 and LibVEX; rerun with -h for copyright info
-==373094== Command: ./myShell
-==373094==
+abdellatif@fedora:~/CS/FCDS_Operating_Systems_Final_Project/shell_1$ valgrind --leak-check=full --show-leak-kinds=all ./myShell 
+==267522== Memcheck, a memory error detector
+==267522== Copyright (C) 2002-2024, and GNU GPL'd, by Julian Seward et al.
+==267522== Using Valgrind-3.26.0 and LibVEX; rerun with -h for copyright info
+==267522== Command: ./myShell
+==267522== 
 shell$ pwd
-/home/abdellatif/CS/FCDS_Operating_Systems_Final_Project/Shell
-shell$ pwd
-/home/abdellatif/CS/FCDS_Operating_Systems_Final_Project/Shell
-shell$
-==373094==
-==373094== HEAP SUMMARY:
-==373094==     in use at exit: 0 bytes in 0 blocks
-==373094==   total heap usage: 5 allocs, 5 frees, 1,112 bytes allocated
-==373094==
-==373094== All heap blocks were freed -- no leaks are possible
-==373094==
-==373094== For lists of detected and suppressed errors, rerun with: -s
-==373094== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
+/home/abdellatif/CS/FCDS_Operating_Systems_Final_Project/shell_1
+shell$ cd ..
+shell$ cd shell_1
+shell$ ls
+cd.c  Command.h  exit.c  history.c  Makefile  myShell  myShell.c  pipe_exec.c  pwd.c  README.md
+shell$ echo "wow"
+"wow"
+shell$ cat exit.c
+#include "Command.h"
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <signal.h>
+
+/* ---------------- SHARED FROM SHELL ---------------- */
+extern pid_t bg_pids[];
+extern int bg_count;
+
+static void run(Command *self)
+{
+    for (int i = 0; i < bg_count; i++)
+    {
+        if (bg_pids[i] > 0)
+        {
+            kill(bg_pids[i], SIGTERM);
+        }
+    }
+}
+
+
+static void help(Command *self)
+{
+    puts("exit");
+    puts("exit the shell.");
+}
+
+static void destroy(Command *self)
+{
+    if (self == NULL)
+        return;
+
+    free(self->name);
+
+    if (self->args != NULL)
+        free(self->args);
+
+    free(self);
+}
+
+Command *exit_command()
+{
+    Command *cmd = malloc(sizeof(Command));
+
+    cmd->name = strdup("exit");
+    cmd->args = NULL;
+    cmd->run = run;
+    cmd->help = help;
+    cmd->destroy = destroy;
+
+    return cmd;
+}shell$ sleep 5
+^C
+shell$ sleep 5 &
+[Background PID 267954]
+shell$ exit
+==267522== 
+==267522== HEAP SUMMARY:
+==267522==     in use at exit: 0 bytes in 0 blocks
+==267522==   total heap usage: 34 allocs, 34 frees, 321 bytes allocated
+==267522== 
+==267522== All heap blocks were freed -- no leaks are possible
+==267522== 
+==267522== For lists of detected and suppressed errors, rerun with: -s
+==267522== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
 ```
 
 
@@ -147,22 +216,41 @@ shell$
 
 ### Testing (Valgrind)
 ```text
-$ valgrind --leak-check=full --show-leak-kinds=all ./myShell
-==412301== Memcheck, a memory error detector
-==412301== Command: ./myShell
-==412301==
-shell$ sleep 3 &
-[Background PID 412310]
-shell$ echo hello
-hello
-shell$
-==412301== HEAP SUMMARY:
-==412301==     in use at exit: 0 bytes in 0 blocks
-==412301==   total heap usage: 12 allocs, 12 frees, 1,248 bytes allocated
-==412301==
-==412301== All heap blocks were freed -- no leaks are possible
-==412301==
-==412301== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
+abdellatif@fedora:~/CS/FCDS_Operating_Systems_Final_Project/shell_1$ valgrind --leak-check=full --show-leak-kinds=all ./myShell 
+==1261720== Memcheck, a memory error detector
+==1261720== Copyright (C) 2002-2024, and GNU GPL'd, by Julian Seward et al.
+==1261720== Using Valgrind-3.26.0 and LibVEX; rerun with -h for copyright info
+==1261720== Command: ./myShell
+==1261720== 
+shell$ ls
+cd.c  Command.h  exit.c  history.c  Makefile  myShell  myShell.c  omg.txt  pipe_exec.c  pwd.c  README.md
+shell$ cd ..
+shell$ cd shell_1
+shell$ ls
+cd.c  Command.h  exit.c  history.c  Makefile  myShell  myShell.c  omg.txt  pipe_exec.c  pwd.c  README.md
+shell$ echo "wow" > text.txt
+shell$ ls
+cd.c  Command.h  exit.c  history.c  Makefile  myShell  myShell.c  omg.txt  pipe_exec.c  pwd.c  README.md  text.txt
+shell$ cat text.txt
+"wow"
+shell$ ls | wc -l
+12
+shell$ ls
+cd.c  Command.h  exit.c  history.c  Makefile  myShell  myShell.c  omg.txt  pipe_exec.c  pwd.c  README.md  text.txt
+shell$ sleep 5 &
+[Background PID 1262312]
+shell$ sleep 6
+^C
+shell$ exit
+==1261720== 
+==1261720== HEAP SUMMARY:
+==1261720==     in use at exit: 0 bytes in 0 blocks
+==1261720==   total heap usage: 44 allocs, 44 frees, 357 bytes allocated
+==1261720== 
+==1261720== All heap blocks were freed -- no leaks are possible
+==1261720== 
+==1261720== For lists of detected and suppressed errors, rerun with: -s
+==1261720== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
 ```
 
 ### Files changed
@@ -177,11 +265,11 @@ No other files were modified.
 
 ## Project Progress
 
-Based on all roadmap checkboxes, including subtasks, the project is at 54% completion (13/24).
+Based on the roadmap subtasks, the project is at 70% completion (19/27).
 
-Each checked box counts toward the total, not only the main roadmap items.
+Only the specific subtasks count toward the total, excluding the main category headers.
 
-<progress value="13" max="24"></progress>
+<progress value="19" max="27"></progress>
 
 ---
 
@@ -189,17 +277,17 @@ Each checked box counts toward the total, not only the main roadmap items.
 
 - [x] Basic shell features
   - [x] Display a prompt such as `myShell$`. @abdellatif72
-  - [x] Accept user input. @abdellatif72
-  - [x] Parse commands and arguments. @abdellatif72
+  - [x] Accept user input. @khilo619 & @abdellatif72
+  - [x] Parse commands and arguments. @khilo619 & @abdellatif72 
   - [x] Execute commands using `fork()`. @abdoheshamelsaid-bit
   - [x] Execute commands using the `exec()` family. @abdoheshamelsaid-bit
   - [x] Run external commands such as `ls`, `cat`, `wc`, `touch`, `mv`, `cp`, and `rm` through the normal execution path. @abdoheshamelsaid-bit
 
-- [ ] Built-in commands
+- [x] Built-in commands
   - [x] `cd <directory>` @MohamedAlaa2005
   - [x] `exit` @ABDOMAGDY2005
   - [x] `pwd` @abdellatif72
-  - [X] `history` @khilo619
+  - [x] `history` @khilo619
 
 - [x] Process management
   - [x] Support foreground execution. @TLMostafa1650
@@ -207,25 +295,23 @@ Each checked box counts toward the total, not only the main roadmap items.
   - [x] Print the process ID for background processes. @TLMostafa1650
   - [x] Store the process ID for background processes. @ABDOMAGDY2005
   - [x] Kill the background processes when exiting the shell. @ABDOMAGDY2005
+  - [x] Handle freeing the history of commands. @abdellatif72
 
-- [ ] Input/output redirection
-  - [ ] Support output redirection with `>`.
-  - [ ] Support input redirection with `<`.
-  - [ ] Handle commands such as `ls > output.txt`.
-  - [ ] Handle commands such as `cat < input.txt`.
+- [x] Input/output redirection @micho789
+  - [x] Handle commands such as `ls > output.txt`. @micho789
+  - [x] Handle commands such as `cat < input.txt`. @micho789
 
 - [x] Pipes
   - [x] Implement command piping using `|`. @Mariam7715y
 
-- [ ] Signal handling
-  - [ ] Handle `Ctrl+C` (`SIGINT`) without exiting the shell.
-  - [ ] Terminate only the foreground child process when `Ctrl+C` is pressed.
-  - [ ] Optionally support `Ctrl+Z` (`SIGTSTP`).
+- [x] Signal handling
+  - [x] Handle `Ctrl+C` (`SIGINT`) without exiting the shell. @khilo619
+  - [x] Terminate only the foreground child process when `Ctrl+C` is pressed. @khilo619
 
-- [ ] Error handling
-  - [ ] Handle command not found errors.
-  - [ ] Handle file and directory errors.
-  - [ ] Handle `fork()` and pipe failures.
+- [x] Error handling
+  - [x] Handle command not found errors.
+  - [x] Handle file and directory errors.
+  - [x] Handle `fork()` and pipe failures.
 
 ---
 
@@ -238,3 +324,4 @@ Each checked box counts toward the total, not only the main roadmap items.
 - [@khilo619](https://github.com/khilo619)
 - [@TLMostafa1650](https://github.com/TLMostafa1650)
 - [@Mariam7715y](https://github.com/Mariam7715y)
+- [@micho789](https://github.com/micho789)
