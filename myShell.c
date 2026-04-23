@@ -11,6 +11,9 @@
 
 Command *pwd_command();
 Command *cd_command(char **args);
+Command *history_command();
+void add_to_history(const char *cmd);
+void get_input(char *buffer, int max_len);
 void execute_pipeline(char **pipe_segments, int n_cmds); 
 
 int main()
@@ -27,22 +30,12 @@ int main()
         printf("\033[1;34mshell$ \033[0m");
 
         char user_input[MAX_LINE];
-
-        if (fgets(user_input, sizeof(user_input), stdin) == NULL)
-        {
-            if (feof(stdin))
-            {
-                clearerr(stdin);
-                putchar('\n');
-                continue;
-            }
-            break;
-        }
-
-        user_input[strcspn(user_input, "\n")] = '\0';
+        get_input(user_input, MAX_LINE);
 
         if (user_input[0] == '\0')
             continue;
+
+        add_to_history(user_input);
 
          // detect if command should run in background using '&'
         int background = 0;
@@ -125,6 +118,12 @@ int main()
             else if (strcmp(name, "exit") == 0)
             {
                 return 0;
+            }
+            else if (strcmp(name, "history") == 0)
+            {
+                Command *cmd = history_command();
+                cmd->run(cmd);
+                cmd->destroy(cmd);
             }
 
             /* ---------------- EXTERNAL COMMANDS ---------------- */
