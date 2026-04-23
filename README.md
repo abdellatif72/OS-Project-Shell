@@ -199,12 +199,14 @@ Each checked box counts toward the total, not only the main roadmap items.
   - [x] `cd <directory>` @MohamedAlaa2005
   - [x] `exit` @ABDOMAGDY2005
   - [x] `pwd` @abdellatif72
-  - [ ] `history` @khilo619
+  - [X] `history` @khilo619
 
 - [x] Process management
   - [x] Support foreground execution. @TLMostafa1650
   - [x] Support background execution using `&`. @TLMostafa1650
   - [x] Print the process ID for background processes. @TLMostafa1650
+  - [x] Store the process ID for background processes. @ABDOMAGDY2005
+  - [x] Kill the background processes when exiting the shell. @ABDOMAGDY2005
 
 - [ ] Input/output redirection
   - [ ] Support output redirection with `>`.
