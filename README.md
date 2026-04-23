@@ -177,29 +177,29 @@ No other files were modified.
 
 ## Project Progress
 
-Based on all roadmap checkboxes, including subtasks, the project is at 25% completion (8/31).
+Based on all roadmap checkboxes, including subtasks, the project is at 54% completion (13/24).
 
 Each checked box counts toward the total, not only the main roadmap items.
 
-<progress value="8" max="31"></progress>
+<progress value="13" max="24"></progress>
 
 ---
 
 ## Roadmap
 
-- [ ] Basic shell features
+- [x] Basic shell features
   - [x] Display a prompt such as `myShell$`. @abdellatif72
   - [x] Accept user input. @abdellatif72
   - [x] Parse commands and arguments. @abdellatif72
-  - [ ] Execute commands using `fork()`.
-  - [ ] Execute commands using the `exec()` family.
-  - [ ] Run external commands such as `ls`, `cat`, `wc`, `touch`, `mv`, `cp`, and `rm` through the normal execution path.
+  - [x] Execute commands using `fork()`. @abdoheshamelsaid-bit
+  - [x] Execute commands using the `exec()` family. @abdoheshamelsaid-bit
+  - [x] Run external commands such as `ls`, `cat`, `wc`, `touch`, `mv`, `cp`, and `rm` through the normal execution path. @abdoheshamelsaid-bit
 
 - [ ] Built-in commands
-  - [ ] `cd <directory>`
-  - [ ] `exit`
+  - [x] `cd <directory>` @MohamedAlaa2005
+  - [x] `exit` @ABDOMAGDY2005
   - [x] `pwd` @abdellatif72
-  - [ ] `history`
+  - [ ] `history` @khilo619
 
 - [x] Process management
   - [x] Support foreground execution. @TLMostafa1650
@@ -212,8 +212,8 @@ Each checked box counts toward the total, not only the main roadmap items.
   - [ ] Handle commands such as `ls > output.txt`.
   - [ ] Handle commands such as `cat < input.txt`.
 
-- [ ] Pipes
-  - [ ] Implement command piping using `|`.
+- [x] Pipes
+  - [x] Implement command piping using `|`. @Mariam7715y
 
 - [ ] Signal handling
   - [ ] Handle `Ctrl+C` (`SIGINT`) without exiting the shell.
