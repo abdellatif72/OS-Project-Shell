@@ -6,6 +6,7 @@
 #include <sys/wait.h>
 #include <sys/types.h> 
 #include <signal.h>    // signal handling (SIGCHLD)
+#include <errno.h>
 
 #define MAX_LINE 1024
 #define MAX_BG 1000
@@ -27,13 +28,14 @@ int main()
 {
     setvbuf(stdout, NULL, _IONBF, 0);
 
-    signal(SIGCHLD, SIG_IGN);      /*prevents zombie processes for background execution
-                                     When a child finishes, OS cleans it automatically */
-
-    
+    signal(SIGINT, SIG_IGN); 
 
     while (1)
     {
+        while (waitpid(-1, NULL, WNOHANG) > 0)
+        {
+        }
+
         printf("\033[1;34mshell$ \033[0m");
 
         char user_input[MAX_LINE];
@@ -145,6 +147,7 @@ int main()
                 }
                 else if (pid == 0)
                 {
+                    signal(SIGINT, SIG_DFL);
                     execvp(tokens[0], tokens);
                     perror("exec failed");
                     exit(1);
@@ -161,15 +164,25 @@ int main()
                     else
                     {
                         // wait for child to finish ( foreground )
-                        waitpid(pid, NULL, 0);
+                        int status = 0;
+                        pid_t w;
+                        do
+                        {
+                            w = waitpid(pid, &status, 0);
+                        }
+                        while (w == -1 && errno == EINTR);
+
+                        if (w == pid && WIFSIGNALED(status) && WTERMSIG(status) == SIGINT)
+                        {
+                            printf("\n");
+                        }
+                    }
                     }
                 }
+                for (int j = 0; j < token_count; j++)
+                free(tokens[j]); // free strdup'd token copies
             }
-
-            for (int j = 0; j < token_count; j++)
-                free(tokens[j]);
         }
-    }
 
     return 0;
 }
