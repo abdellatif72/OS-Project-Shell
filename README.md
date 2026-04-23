@@ -224,3 +224,15 @@ Each checked box counts toward the total, not only the main roadmap items.
   - [ ] Handle command not found errors.
   - [ ] Handle file and directory errors.
   - [ ] Handle `fork()` and pipe failures.
+
+---
+
+## Contributors
+
+- [@abdellatif72](https://github.com/abdellatif72)
+- [@abdoheshamelsaid-bit](https://github.com/abdoheshamelsaid-bit)
+- [@MohamedAlaa2005](https://github.com/MohamedAlaa2005)
+- [@ABDOMAGDY2005](https://github.com/ABDOMAGDY2005)
+- [@khilo619](https://github.com/khilo619)
+- [@TLMostafa1650](https://github.com/TLMostafa1650)
+- [@Mariam7715y](https://github.com/Mariam7715y)
