@@ -1,4 +1,4 @@
-# Custom Linux Shell in C
+# Linux Shell in C
 
 ## Project Overview
 
