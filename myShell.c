@@ -179,10 +179,9 @@ int main()
                     }
                     }
                 }
+                for (int j = 0; j < token_count; j++)
+                free(tokens[j]); // free strdup'd token copies
             }
-
-            for (int j = 0; j < token_count; j++)
-                free(tokens[j]);
         }
 
     return 0;
