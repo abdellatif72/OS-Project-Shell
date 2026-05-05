@@ -4,6 +4,9 @@
 #include <stdlib.h> // malloc(), free()
 #include <unistd.h> // getcwd()
 
+// Built-in "pwd" command implementation.
+
+// Execute the pwd command (print current working directory).
 static void run(Command *self)
 {
     char buf[1024]; // buffer for current working directory
@@ -23,6 +26,7 @@ static void run(Command *self)
     }
 }
 
+// Print usage information for pwd.
 static void help(Command *self)
 {
     puts("pwd");
@@ -35,6 +39,7 @@ static void help(Command *self)
     free(self) the command pointer is no longer valid.
 */
 
+// Free resources owned by this pwd command instance.
 static void destroy(Command *self)
 {
     if (self == NULL)
@@ -50,6 +55,7 @@ static void destroy(Command *self)
     free(self);
 }
 
+// Construct a Command object for the pwd built-in.
 Command *pwd_command()
 {
     Command *cmd = (Command *)malloc(sizeof(Command));

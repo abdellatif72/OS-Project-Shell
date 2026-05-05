@@ -5,10 +5,13 @@
 #include <unistd.h>
 #include <signal.h>
 
+// Built-in "exit" command implementation.
+
 /* ---------------- SHARED FROM SHELL ---------------- */
 extern pid_t bg_pids[];
 extern int bg_count;
 
+// Terminate any tracked background processes.
 static void run(Command *self)
 {
     for (int i = 0; i < bg_count; i++)
@@ -21,12 +24,14 @@ static void run(Command *self)
 }
 
 
+// Print usage information for exit.
 static void help(Command *self)
 {
     puts("exit");
     puts("exit the shell.");
 }
 
+// Free resources owned by this exit command instance.
 static void destroy(Command *self)
 {
     if (self == NULL)
@@ -40,6 +45,7 @@ static void destroy(Command *self)
     free(self);
 }
 
+// Construct a Command object for the exit built-in.
 Command *exit_command()
 {
     Command *cmd = malloc(sizeof(Command));

@@ -4,6 +4,9 @@
 #include <stdlib.h>  // malloc(), free()
 #include <unistd.h>  // chdir()
 
+// Built-in "cd" command implementation.
+
+// Execute the cd command using the provided arguments.
 static void run(Command *self)
 {
     /*
@@ -27,12 +30,14 @@ static void run(Command *self)
     }
 }
 
+// Print usage information for cd.
 static void help(Command *self)
 {
     puts("cd <directory>");
     puts("Change the current working directory to <directory>.");
 }
 
+// Free resources owned by this cd command instance.
 static void destroy(Command *self)
 {
     if (self == NULL)
@@ -57,6 +62,7 @@ static void destroy(Command *self)
     free(self);
 }
 
+// Construct a Command object for the cd built-in.
 Command *cd_command(char **args)
 {
     Command *cmd = (Command *)malloc(sizeof(Command));

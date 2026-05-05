@@ -9,33 +9,44 @@
 #include <signal.h> // signal handling (SIGCHLD)
 #include <errno.h>
 
+// Main shell REPL and command dispatch.
 #define MAX_LINE 1024
 #define MAX_BG 1000
 
+// Built-in command constructors.
 Command *pwd_command();
 Command *cd_command(char **args);
 Command *history_command();
 Command *exit_command();
 void free_history();
 
+// Input/history/pipeline helpers.
 void add_to_history(const char *cmd);
 int get_input(char *buffer, int max_len);
 void execute_pipeline(char **pipe_segments, int n_cmds);
 
 /* ---------------- BACKGROUND PROCESS STORAGE ---------------- */
+// Track PIDs of background jobs for cleanup on exit.
 pid_t bg_pids[MAX_BG];
 int bg_count = 0;
 
+// Shell entry point and REPL loop.
 int main()
 {
+
+    // For showing output immediately
     setvbuf(stdout, NULL, _IONBF, 0);
 
+    // Cancel the effect of CTRL+C
     signal(SIGINT, SIG_IGN);
 
+    // REPL: prompt, read, parse, execute.
     while (1)
     {
+        // Show `shell$` in blue
         printf("\033[1;34mshell$ \033[0m");
 
+        // Read input line from user
         char user_input[MAX_LINE];
         if (get_input(user_input, MAX_LINE) == -1)
         {
@@ -70,16 +81,18 @@ int main()
         char *commands[50];
         int argc = 0;
 
+        // Read first command in the pipe (if exists)
         char *tok = strtok(user_input, "|");
 
         while (tok != NULL && argc < 49)
         {
             commands[argc++] = tok;
-            tok = strtok(NULL, "|");
+            tok = strtok(NULL, "|"); // Read the next command
         }
 
         commands[argc] = NULL;
 
+        // If there is more than one command separated by |, implement pipes
         if (argc > 1)
         {
             execute_pipeline(commands, argc);
@@ -135,14 +148,12 @@ int main()
             {
                 Command *cmd = exit_command();
                 cmd->run(cmd);
-                cmd->destroy(cmd);
+                cmd->destroy(cmd); // Kill all background processes
 
                 for (int j = 0; j < token_count; j++)
                 {
                     free(tokens[j]);
                 }
-
-                free(name);
 
                 free_history();
 
@@ -157,10 +168,15 @@ int main()
                 if (pid < 0)
                 {
                     perror("fork failed");
-                    free_history();
+                    for (int j = 0; j < token_count; j++)
+                    {
+                        free(tokens[j]);
+                    }
+                    continue;
                 }
                 else if (pid == 0)
                 {
+                    // Enable CTRL+C for killing the child process
                     signal(SIGINT, SIG_DFL);
                     handle_redirection(tokens);
                     execvp(tokens[0], tokens);
@@ -170,8 +186,6 @@ int main()
                         exit(127);
                     }
                     perror("exec failed");
-                    free(name);
-                    free_history();
                     exit(1);
                 }
                 else
@@ -202,9 +216,9 @@ int main()
             }
             for (int j = 0; j < token_count; j++)
                 free(tokens[j]); // free strdup'd token copies
+
         }
     }
-
     free_history();
 
     return 0;
