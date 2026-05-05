@@ -182,18 +182,20 @@ shell$ sleep 5 &
 
 ---
 
-## Team Contributions
+## Contributors
 
-| Member | Task | GitHub |
-| --- | --- | --- |
-| Abdellatif | Shell prompt, `pwd`, input parsing, memory cleanup | [@abdellatif72](https://github.com/abdellatif72) |
-| Abdo Hesham | `fork()`, `execvp()`, external commands | [@abdoheshamelsaid-bit](https://github.com/abdoheshamelsaid-bit) |
-| Mohamed Alaa | `cd` command | [@MohamedAlaa2005](https://github.com/MohamedAlaa2005) |
-| Abdo Magdy | `exit` command, background PID storage/cleanup | [@ABDOMAGDY2005](https://github.com/ABDOMAGDY2005) |
-| Khaled Nabil | `history` command, handle input, signal handling | [@khilo619](https://github.com/khilo619) |
-| Mostafa | Foreground and background execution (`&`) | [@TLMostafa1650](https://github.com/TLMostafa1650) |
-| Mariam | Command piping (`\|`) | [@Mariam7715y](https://github.com/Mariam7715y) |
-| Michel | Input/Output redirection (`>`, `<`, `>>`) | [@micho789](https://github.com/micho789) |
+| Member | GitHub |
+| --- | --- |
+| Ahmed Abdellatif | [@abdellatif72](https://github.com/abdellatif72) |
+| Abdo Hesham | [@abdoheshamelsaid-bit](https://github.com/abdoheshamelsaid-bit) |
+| Abdo Magdy | [@ABDOMAGDY2005](https://github.com/ABDOMAGDY2005) |
+| Khaled Nabil | [@khilo619](https://github.com/khilo619) |
+| Mohamed Alaa | [@MohamedAlaa2005](https://github.com/MohamedAlaa2005) |
+| Mostafa El-Hosseny | [@TLMostafa1650](https://github.com/TLMostafa1650) |
+| Mariam Badry | [@Mariam7715y](https://github.com/Mariam7715y) |
+| Michel Nader | [@micho789](https://github.com/micho789) |
+| Mahmoud Shama3a | [@mahmoud2005mg-commits](https://github.com/mahmoud2005mg-commits) |
+| Heba Ashraf | [@hebaandgithub](https://github.com/hebaandgithub) |
 
 ---
 
