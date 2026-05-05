@@ -1,5 +1,17 @@
 # Linux Shell in C
 
+## Table of Contents
+- [Project Overview](#project-overview)
+- [Objectives](#objectives)
+- [Features Implemented](#features-implemented)
+- [System Design](#system-design)
+- [Project Structure](#project-structure)
+- [Compilation & Execution](#compilation--execution)
+- [Example Usage](#example-usage)
+- [Contributors](#contributors)
+- [Learning Outcomes](#learning-outcomes)
+- [Conclusion](#conclusion)
+
 ## Project Overview
 
 This project implements a **custom command-line shell** in C that mimics basic functionality of Unix/Linux shells.
