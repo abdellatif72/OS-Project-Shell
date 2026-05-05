@@ -22,6 +22,18 @@ void add_to_history(const char *cmd);
 int get_input(char *buffer, int max_len);
 void execute_pipeline(char **pipe_segments, int n_cmds);
 
+void handle_sigint(int sig)
+{
+    printf("\n");
+
+    Command *cmd = exit_command();
+    cmd->run(cmd);
+    cmd->destroy(cmd);
+
+    free_history();
+    exit(0);
+}
+
 /* ---------------- BACKGROUND PROCESS STORAGE ---------------- */
 pid_t bg_pids[MAX_BG];
 int bg_count = 0;
@@ -30,7 +42,7 @@ int main()
 {
     setvbuf(stdout, NULL, _IONBF, 0);
 
-    signal(SIGINT, SIG_IGN);
+    signal(SIGINT, handle_sigint);
 
     while (1)
     {
