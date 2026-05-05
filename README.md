@@ -138,15 +138,18 @@ wait() / background
 
 ```text
 .
-├── myShell.c
-├── cd.c
-├── pwd.c
-├── history.c
-├── exit.c
-├── pipe_exec.c
-├── redirection.c
-├── Command.h
-├── redirection.h
+├── include/
+│   ├── Command.h
+│   └── redirection.h
+├── src/
+│   ├── myShell.c
+│   ├── parser.c
+│   ├── history.c
+│   ├── cd.c
+│   ├── pwd.c
+│   ├── exit.c
+│   ├── pipe_exec.c
+│   └── redirection.c
 ├── Makefile
 └── README.md
 ```
